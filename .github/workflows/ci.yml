@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: |
+          echo "MONGO_USERNAME=admin" >> .env
+          echo "MONGO_PASSWORD=password" >> .env
+          echo "MONGO_DB=fruitsdb" >> .env
+          echo "APP_PORT=3000" >> .env
+
+      - name: Build and start containers
+        run: docker compose up --build -d
+
+      - name: Wait for app to be healthy
+        run: |
+          for i in {1..15}; do
+            curl -sf http://localhost/health && echo "App is up!" && exit 0
+            echo "Waiting..."
+            sleep 5
+          done
+          echo "App never became healthy" && exit 1
+
+      - name: Test HTML page returns apple count
+        run: |
+          curl -sf http://localhost/ | grep -q "We have <strong>5</strong> apples in stock." && echo "Apple count found!" || (echo "Test failed" && exit 1)
+
+      - name: Tear down
+        if: always()
+        run: docker compose down
