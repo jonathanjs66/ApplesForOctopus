@@ -1,5 +1,5 @@
 
-db = db.getSiblingDB('fruitdb');
+db = db.getSiblingDB('fruitsdb');
 
 db.fruits.insertMany([
   { _id: 1, name: 'apples', qty: 5, rating: 3 },
