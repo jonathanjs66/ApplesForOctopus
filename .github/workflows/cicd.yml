@@ -16,10 +16,12 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "MONGO_USERNAME=admin" >> .env
-          echo "MONGO_PASSWORD=password" >> .env
-          echo "MONGO_DB=fruitsdb" >> .env
-          echo "APP_PORT=3000" >> .env
+          cat > .env <<EOF
+          MONGO_USERNAME=admin
+          MONGO_PASSWORD=password
+          MONGO_DB=fruitsdb
+          APP_PORT=3000
+          EOF
 
       - name: Build and start containers
         run: docker compose up --build -d
@@ -39,7 +41,7 @@ jobs:
 
       - name: Tear down
         if: always()
-        run: docker compose down
+        run: docker compose down -v --remove-orphans
 
   deploy:
     needs: ci
@@ -55,6 +57,29 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
           script: |
+            set -e
+
             cd ~/ApplesForOctopus
-            git pull origin main
-            docker-compose up -d --build
+
+            git fetch origin
+            git checkout main
+            git reset --hard ${{ github.sha }}
+
+            cat > .env <<EOF
+            MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+            MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+            MONGO_DB=${{ secrets.MONGO_DB }}
+            APP_PORT=${{ secrets.APP_PORT }}
+            EOF
+
+            docker compose down -v --remove-orphans
+            docker compose up --build -d
+
+            for i in {1..15}; do
+              curl -sf http://localhost/health && break
+              echo "Waiting for deployed app..."
+              sleep 5
+            done
+
+            curl -sf http://localhost/ | grep -q "We have <strong>5</strong> apples in stock."
+            docker compose ps
