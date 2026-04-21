@@ -72,8 +72,8 @@ jobs:
             APP_PORT=${{ secrets.APP_PORT }}
             EOF
 
-            docker compose down -v || true
-            docker compose up --build -d
+            docker-compose down -v || true
+            docker-compose up --build -d
 
             for i in {1..15}; do
               curl -sf http://localhost/health && break
@@ -82,4 +82,4 @@ jobs:
             done
 
             curl -sf http://localhost/ | grep -q "We have <strong>5</strong> apples in stock."
-            docker compose ps
+            docker-compose ps
