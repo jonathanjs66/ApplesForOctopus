@@ -18,20 +18,13 @@ Request flow:
 
 `Browser -> Nginx -> Node.js App -> MongoDB`
 
-## Technologies Used
+### Visual Architecture
 
-- Node.js
-- Express
-- MongoDB
-- Mongoose
-- Nginx
-- Docker
-- Docker Compose
-- GitHub Actions
-
-## Project Structure
-
-```text
+```mermaid
+flowchart LR
+    Browser --> Nginx[nginx container]
+    Nginx --> App[node.js app container]
+    App --> Mongo[(mongodb container)]
 .
 ├── app
 │   ├── Dockerfile
@@ -39,13 +32,14 @@ Request flow:
 │   └── server.js
 ├── mongo
 │   ├── Dockerfile
-│   └── init.js
+│   ├── init.js
+│   └── ensure-app-user.js
 ├── nginx
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── .github
 │   └── workflows
-│       └── ci.yml
+│       └── cicd.yml
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml

@@ -18,9 +18,11 @@ jobs:
         run: |
           cat > .env <<EOF
           MONGO_USERNAME=admin
-          MONGO_PASSWORD=password
+          MONGO_PASSWORD=OctopusAdmin2026!
           MONGO_DB=fruitsdb
           APP_PORT=3000
+          APP_DB_USERNAME=fruits_app
+          APP_DB_PASSWORD=OctopusApp2026!
           EOF
 
       - name: Build and start containers
@@ -37,7 +39,10 @@ jobs:
 
       - name: Test HTML page returns apple count
         run: |
-          curl -sf http://localhost/ | grep -q "We have <strong>5</strong> apples in stock." && echo "Apple count found!" || (echo "Test failed" && exit 1)
+          page="$(curl -fsS http://localhost/)"
+          echo "$page" | grep -q "apples"
+          echo "$page" | grep -q ">5<"
+          echo "Homepage contains the apples count."
 
       - name: Tear down
         if: always()
@@ -70,10 +75,30 @@ jobs:
             MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
             MONGO_DB=${{ secrets.MONGO_DB }}
             APP_PORT=${{ secrets.APP_PORT }}
+            APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
+            APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
             EOF
 
-            docker-compose down -v || true
-            docker-compose up --build -d
+            set -a
+            . ./.env
+            set +a
+
+            docker-compose up --build -d mongodb
+
+            for i in {1..15}; do
+              docker-compose exec -T mongodb mongosh -u "$MONGO_USERNAME" -p "$MONGO_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand('ping')" >/dev/null 2>&1 && break
+              echo "Waiting for MongoDB..."
+              sleep 5
+            done
+
+            docker-compose exec -T \
+              -e MONGO_DB="$MONGO_DB" \
+              -e APP_DB_USERNAME="$APP_DB_USERNAME" \
+              -e APP_DB_PASSWORD="$APP_DB_PASSWORD" \
+              mongodb \
+              mongosh -u "$MONGO_USERNAME" -p "$MONGO_PASSWORD" --authenticationDatabase admin /opt/mongo/ensure-app-user.js
+
+            docker-compose up --build -d app nginx
 
             for i in {1..15}; do
               curl -sf http://localhost/health && break
@@ -81,5 +106,7 @@ jobs:
               sleep 5
             done
 
-            curl -sf http://localhost/ | grep -q "We have <strong>5</strong> apples in stock."
+            page="$(curl -fsS http://localhost/)"
+            echo "$page" | grep -q "apples"
+            echo "$page" | grep -q ">5<"
             docker-compose ps

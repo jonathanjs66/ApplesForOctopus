@@ -7,10 +7,10 @@ const PORT = process.env.APP_PORT || 3000;
 const MONGO_HOST = process.env.MONGO_HOST || 'mongodb';
 const MONGO_PORT = process.env.MONGO_PORT || '27017';
 const MONGO_DB = process.env.MONGO_DB || 'fruitsdb';
-const MONGO_USERNAME = process.env.MONGO_USERNAME || 'admin';
-const MONGO_PASSWORD = process.env.MONGO_PASSWORD || 'password';
+const APP_DB_USERNAME = process.env.APP_DB_USERNAME || 'fruits_app';
+const APP_DB_PASSWORD = process.env.APP_DB_PASSWORD || 'OctopusApp2026!';
 
-const MONGO_URI = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin`;
+const MONGO_URI = `mongodb://${APP_DB_USERNAME}:${APP_DB_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=${MONGO_DB}`;
 
 const fruitSchema = new mongoose.Schema({
   _id: Number,
