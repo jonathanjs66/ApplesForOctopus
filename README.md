@@ -1,11 +1,15 @@
 # Octopus Fruits App
 
-Containerized "hello world" web application for the Octopus exercise. The stack uses Node.js, MongoDB, and Nginx, with each component running in its own container.
+Containerized "hello Apple" web application for the Octopus exercise. The stack uses Node.js, MongoDB, and Nginx, with each component running in its own container.
 
 ## Overview
 
-This project provisions a small web application that reads fruit inventory data from MongoDB and displays the number of apples in stock on an HTML page.
-
+This project requierment was to provisions a small web application that reads fruit inventory data from MongoDB and displays the number of apples in stock on an HTML page.
+my idea:
+1) was to expand the display to show inventory of all fruits
+2) add a backup script:
+3) use cd as an ssh to ec2
+4) password lifeycle
 ## Architecture
 
 The application is composed of three containers:

@@ -3,7 +3,21 @@ set -euo pipefail
 
 TIMESTAMP="$(date +%F_%H-%M-%S)"
 BACKUP_DIR="./backups"
-BACKUP_FILE="$BACKUP_DIR/mongo-backup-$TIMESTAMP.archive.gz"
+
+LAST_INDEX="$(
+  find "$BACKUP_DIR" -maxdepth 1 -type f -name 'backup-*.archive.gz' -printf '%f\n' 2>/dev/null \
+    | sed -E 's/^backup-([0-9]+)-.*$/\1/' \
+    | sort -n \
+    | tail -1
+)"
+
+if [ -z "${LAST_INDEX:-}" ]; then
+  NEXT_INDEX=1
+else
+  NEXT_INDEX=$((LAST_INDEX + 1))
+fi
+
+BACKUP_FILE="$BACKUP_DIR/backup-$NEXT_INDEX-$TIMESTAMP.archive.gz"
 
 mkdir -p "$BACKUP_DIR"
 
