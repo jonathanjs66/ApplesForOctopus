@@ -128,6 +128,7 @@ function renderInventoryPage(fruits, backups, notice) {
               min="0"
               name="fruit-${fruit._id}"
               value="${fruit.qty}"
+              autocomplete="off"
               aria-label="${fruit.name} quantity"
             >
             <button type="button" class="stepper" data-target="qty-${fruit._id}" data-direction="up" aria-label="Increase ${fruit.name} quantity">+</button>
@@ -394,7 +395,7 @@ function renderInventoryPage(fruits, backups, notice) {
             <h1>Fruit Inventory</h1>
             ${notice ? `<p class="notice notice-${notice.type}">${notice.text}</p>` : ''}
             <p class="intro">Update the numbers on the right, save them to MongoDB, and create or restore numbered backups from the list below.</p>
-            <form method="post" action="/inventory/save">
+            <form id="inventoryForm" method="post" action="/inventory/save" autocomplete="off">
               <ul class="inventory">
                 ${fruitRows}
               </ul>
@@ -427,7 +428,13 @@ function renderInventoryPage(fruits, backups, notice) {
           </section>
         </main>
         <script>
+          const inventoryForm = document.getElementById('inventoryForm');
           const stepperButtons = document.querySelectorAll('.stepper');
+
+          if (inventoryForm) {
+            // Reset browser-restored field values back to the Mongo-backed HTML values.
+            inventoryForm.reset();
+          }
 
           stepperButtons.forEach((button) => {
             button.addEventListener('click', () => {
