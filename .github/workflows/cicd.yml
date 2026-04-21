@@ -41,8 +41,10 @@ jobs:
         run: |
           page="$(curl -fsS http://localhost/)"
           echo "$page" | grep -q "apples"
-          echo "$page" | grep -q ">5<"
+          echo "$page" | grep -q 'id="qty-1"'
+          echo "$page" | grep -q 'value="5"'
           echo "Homepage contains the apples count."
+
 
       - name: Tear down
         if: always()
@@ -107,8 +109,9 @@ jobs:
               echo "Waiting for deployed app..."
               sleep 5
             done
-
             page="$(curl -fsS http://localhost/)"
             echo "$page" | grep -q "apples"
-            echo "$page" | grep -q ">5<"
+            echo "$page" | grep -q 'id="qty-1"'
+            echo "$page" | grep -q 'value="5"'
             docker-compose ps
+
