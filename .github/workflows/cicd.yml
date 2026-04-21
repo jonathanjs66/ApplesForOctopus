@@ -82,6 +82,8 @@ jobs:
             set -a
             . ./.env
             set +a
+            
+            docker-compose down || true
 
             docker-compose up --build -d mongodb
 
