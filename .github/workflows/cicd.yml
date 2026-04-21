@@ -72,7 +72,7 @@ jobs:
             APP_PORT=${{ secrets.APP_PORT }}
             EOF
 
-            docker compose down -v --remove-orphans
+            docker compose down -v || true
             docker compose up --build -d
 
             for i in {1..15}; do
