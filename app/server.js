@@ -31,6 +31,41 @@ const fruitSchema = new mongoose.Schema({
 
 const Fruit = mongoose.model('Fruit', fruitSchema, 'fruits');
 
+async function buildInventoryBulkOperations(submittedValues, requireAllFields = true) {
+  const fruits = await Fruit.find({}, { _id: 1 }).lean();
+  const bulkOperations = [];
+
+  for (const fruit of fruits) {
+    const fieldName = `fruit-${fruit._id}`;
+    const submittedValue = submittedValues[fieldName];
+
+    if (submittedValue === undefined) {
+      if (requireAllFields) {
+        throw new Error(`Missing quantity for ${fieldName}`);
+      }
+
+      continue;
+    }
+
+    const parsedQty = Number.parseInt(submittedValue, 10);
+
+    if (!Number.isInteger(parsedQty) || parsedQty < 0) {
+      const validationError = new Error('INVALID_FRUIT_QTY');
+      validationError.code = 'INVALID_FRUIT_QTY';
+      throw validationError;
+    }
+
+    bulkOperations.push({
+      updateOne: {
+        filter: { _id: fruit._id },
+        update: { $set: { qty: parsedQty } }
+      }
+    });
+  }
+
+  return bulkOperations;
+}
+
 function formatBackupTimestamp(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -363,14 +398,12 @@ function renderInventoryPage(fruits, backups, notice) {
               <ul class="inventory">
                 ${fruitRows}
               </ul>
-              ${fruits.length > 0 ? `
-                <div class="save-panel">
-                  <button class="save-button" type="submit">Save Inventory To MongoDB</button>
-                </div>
-              ` : ''}
-            </form>
-            <form class="backup-panel" method="post" action="/inventory/backup">
-              <button class="save-button" type="submit">Create New Backup In backups/</button>
+              <div class="save-panel">
+                <button class="save-button" type="submit" ${fruits.length === 0 ? 'disabled' : ''}>Save Inventory To MongoDB</button>
+              </div>
+              <div class="backup-panel">
+                <button class="save-button" type="submit" formaction="/inventory/backup">Create New Backup In backups/</button>
+              </div>
             </form>
             <section class="restore-panel">
               <p class="restore-copy">Restore one of the saved MongoDB backups below. Backups are listed by backup number and timestamp, so this works the same way on EC2 without browsing for a file in a GUI.</p>
@@ -477,24 +510,7 @@ app.get('/', async (req, res) => {
 
 app.post('/inventory/save', async (req, res) => {
   try {
-    const fruits = await Fruit.find({}, { _id: 1 }).lean();
-    const bulkOperations = [];
-
-    for (const fruit of fruits) {
-      const submittedValue = req.body[`fruit-${fruit._id}`];
-      const parsedQty = Number.parseInt(submittedValue, 10);
-
-      if (!Number.isInteger(parsedQty) || parsedQty < 0) {
-        return res.status(400).send('Each fruit quantity must be a whole number greater than or equal to zero.');
-      }
-
-      bulkOperations.push({
-        updateOne: {
-          filter: { _id: fruit._id },
-          update: { $set: { qty: parsedQty } }
-        }
-      });
-    }
+    const bulkOperations = await buildInventoryBulkOperations(req.body, true);
 
     if (bulkOperations.length > 0) {
       await Fruit.bulkWrite(bulkOperations);
@@ -502,6 +518,10 @@ app.post('/inventory/save', async (req, res) => {
 
     return res.redirect('/');
   } catch (error) {
+    if (error.code === 'INVALID_FRUIT_QTY') {
+      return res.status(400).send('Each fruit quantity must be a whole number greater than or equal to zero.');
+    }
+
     console.error('Failed to save fruit inventory:', error);
     return res.status(500).send('Application could not save the fruit inventory.');
   }
@@ -514,6 +534,12 @@ app.post('/inventory/backup', async (req, res) => {
   }
 
   try {
+    const bulkOperations = await buildInventoryBulkOperations(req.body, false);
+
+    if (bulkOperations.length > 0) {
+      await Fruit.bulkWrite(bulkOperations);
+    }
+
     await mkdir(BACKUP_DIR, { recursive: true });
     const backupFileName = await createNextBackupFileName();
     const backupPath = path.join(BACKUP_DIR, backupFileName);
@@ -531,6 +557,10 @@ app.post('/inventory/backup', async (req, res) => {
 
     return res.redirect('/?status=backupSuccess');
   } catch (error) {
+    if (error.code === 'INVALID_FRUIT_QTY') {
+      return res.status(400).send('Each fruit quantity must be a whole number greater than or equal to zero.');
+    }
+
     console.error('Failed to create MongoDB backup:', error.stderr || error);
     return res.redirect('/?status=backupFailed');
   }
