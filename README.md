@@ -18,6 +18,20 @@ Request flow:
 
 `Browser -> Nginx -> Node.js App -> MongoDB`
 
+## Backup And Restore
+
+The project includes simple MongoDB backup and restore scripts for operational recovery.
+
+Backups are stored on the host machine under the `backups/` directory and are not committed to Git.
+
+### Create A Backup
+
+Make sure the stack is running, then run:
+
+```bash
+./scripts/backup.sh
+
+
 ### Visual Architecture
 
 ```mermaid
