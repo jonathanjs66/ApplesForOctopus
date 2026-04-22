@@ -17,12 +17,12 @@ jobs:
       - name: Create .env file
         run: |
           cat > .env <<EOF
-          MONGO_USERNAME=admin
-          MONGO_PASSWORD=OctopusAdmin2026!
-          MONGO_DB=fruitsdb
-          APP_PORT=3000
-          APP_DB_USERNAME=fruits_app
-          APP_DB_PASSWORD=OctopusApp2026!
+          MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+          MONGO_DB=${{ secrets.MONGO_DB }}
+          APP_PORT=${{ secrets.APP_PORT }}
+          APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
+          APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
           EOF
 
       - name: Build and start containers

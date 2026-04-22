@@ -6,9 +6,14 @@ Containerized "hello Apple" web application for the Octopus exercise. The stack 
 
 This project requierment was to provisions a small web application that reads fruit inventory data from MongoDB and displays the number of apples in stock on an HTML page.
 my idea:
-1) was to expand the display to show inventory of all fruits
-2) add a backup script:
-3) use cd as an ssh to ec2
+1) was to expand the display to show inventory of all fruits, everytime we open or close the container we go back to the original number of fruit beacuse they are hardcoded in the database, the next step would be to save the data from out of the container and push the new values in once they are uploaded
+2) add a backup script:  
+I created a button that backs up any changes that i made in the values, and another button to restore the backed up values on /backups
+and added a button that keeps the values in tact after reboot as long as the volume is not deleted on data/db
+3) use cd as an ssh to ec2:
+i made a file that everytime the ec2 restart it will automatically go to the app folder and docker compose it at
+/etc/systemd/system/octopus-app.service
+
 4) password lifeycle
 ## Architecture
 
