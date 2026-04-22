@@ -85,7 +85,7 @@ jobs:
             . ./.env
             set +a
             
-            docker-compose down || true
+            docker-compose down --remove-orphans || true
 
             docker-compose up --build -d mongodb
 
@@ -110,7 +110,7 @@ jobs:
               mongodb \
               mongosh -u "$MONGO_USERNAME" -p "$MONGO_PASSWORD" --authenticationDatabase admin /opt/mongo/ensure-app-user.js
 
-            docker-compose up --build -d app nginx
+            docker-compose up --build -d app1 app2 nginx
 
             for i in {1..15}; do
               if curl -sf http://localhost/health; then
