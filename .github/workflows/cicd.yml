@@ -17,13 +17,13 @@ jobs:
       - name: Create .env file
         run: |
           cat > .env <<EOF
-MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
-MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
-MONGO_DB=${{ secrets.MONGO_DB }}
-APP_PORT=${{ secrets.APP_PORT }}
-APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
-APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
-EOF
+          MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+          MONGO_DB=${{ secrets.MONGO_DB }}
+          APP_PORT=${{ secrets.APP_PORT }}
+          APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
+          APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
+          EOF
 
       - name: Build and start containers
         run: docker compose up --build -d
@@ -73,13 +73,13 @@ EOF
             git reset --hard ${{ github.sha }}
 
             cat > .env <<EOF
-MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
-MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
-MONGO_DB=${{ secrets.MONGO_DB }}
-APP_PORT=${{ secrets.APP_PORT }}
-APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
-APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
-EOF
+            MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+            MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+            MONGO_DB=${{ secrets.MONGO_DB }}
+            APP_PORT=${{ secrets.APP_PORT }}
+            APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
+            APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
+            EOF
 
             set -a
             . ./.env
