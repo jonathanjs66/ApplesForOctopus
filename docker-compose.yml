@@ -16,11 +16,12 @@ services:
       timeout: 5s
       retries: 5
 
-  app:
+  app1:
     build: ./app
     environment:
+      APP_INSTANCE_NAME: app1
       MONGO_DB: ${MONGO_DB}
-      APP_PORT: ${APP_PORT}
+      APP_PORT: 3000
       APP_DB_USERNAME: ${APP_DB_USERNAME}
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
       BACKUP_DIR: /app/backups
@@ -29,19 +30,29 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+
+  app2:
+    build: ./app
+    environment:
+      APP_INSTANCE_NAME: app2
+      MONGO_DB: ${MONGO_DB}
+      APP_PORT: 3000
+      APP_DB_USERNAME: ${APP_DB_USERNAME}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      BACKUP_DIR: /app/backups
+    volumes:
+      - ./backups:/app/backups:z
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
   nginx:
     build: ./nginx
     ports:
       - "80:80"
     depends_on:
-      app:
-        condition: service_healthy
+      - app1
+      - app2
 
 volumes:
   mongo-data:

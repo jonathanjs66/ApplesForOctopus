@@ -14,6 +14,7 @@ const MONGO_PORT = process.env.MONGO_PORT || '27017';
 const MONGO_DB = process.env.MONGO_DB || 'fruitsdb';
 const APP_DB_USERNAME = process.env.APP_DB_USERNAME || 'fruits_app';
 const APP_DB_PASSWORD = process.env.APP_DB_PASSWORD;
+const APP_INSTANCE_NAME = process.env.APP_INSTANCE_NAME || 'app';
 
 if (!APP_DB_PASSWORD) {
   console.error('APP_DB_PASSWORD environment variable is required');
@@ -76,21 +77,34 @@ function formatBackupTimestamp(date = new Date()) {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
+  const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
 
-  return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+  return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}-${milliseconds}`;
 }
 
 function parseBackupFileName(fileName) {
-  const match = /^backup-(\d+)-(.+)\.archive\.gz$/.exec(fileName);
+  const newFormatMatch = /^backup-(\d+)-([A-Za-z0-9_-]+)-(.+)\.archive\.gz$/.exec(fileName);
 
-  if (!match) {
+  if (newFormatMatch) {
+    return {
+      fileName,
+      instanceName: newFormatMatch[2],
+      number: Number.parseInt(newFormatMatch[1], 10),
+      timestamp: newFormatMatch[3]
+    };
+  }
+
+  const legacyFormatMatch = /^backup-(\d+)-(.+)\.archive\.gz$/.exec(fileName);
+
+  if (!legacyFormatMatch) {
     return null;
   }
 
   return {
     fileName,
-    number: Number.parseInt(match[1], 10),
-    timestamp: match[2]
+    instanceName: 'legacy',
+    number: Number.parseInt(legacyFormatMatch[1], 10),
+    timestamp: legacyFormatMatch[2]
   };
 }
 
@@ -110,7 +124,7 @@ async function createNextBackupFileName() {
   const nextNumber = backups.length > 0 ? backups[0].number + 1 : 1;
   const timestamp = formatBackupTimestamp();
 
-  return `backup-${nextNumber}-${timestamp}.archive.gz`;
+  return `backup-${nextNumber}-${APP_INSTANCE_NAME}-${timestamp}.archive.gz`;
 }
 
 function renderInventoryPage(fruits, backups, notice) {
@@ -149,7 +163,7 @@ function renderInventoryPage(fruits, backups, notice) {
     ? backups
       .map((backup) => `
         <option value="${backup.fileName}">
-          Backup ${backup.number} - ${backup.timestamp}
+          Backup ${backup.number} - ${backup.instanceName} - ${backup.timestamp}
         </option>
       `)
       .join('')

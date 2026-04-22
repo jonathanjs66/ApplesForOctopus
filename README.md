@@ -10,7 +10,7 @@ The original requirement was a small web application that reads fruit inventory 
 The app now displays all fruit records, not only apples, and lets the user update quantities through the web UI.
 
 2. Backup and restore
-The project includes both UI-based and script-based MongoDB backup and restore flows. Backups are written to the host `backups/` directory so they remain available outside the containers.
+The project includes both UI-based and script-based MongoDB backup and restore flows. Backups are written to the host `backups/` directory so they remain available outside the containers,
 
 3. EC2 startup and deployment
 The application is deployed to EC2 through GitHub Actions over SSH. On the server side, the stack can be started automatically on reboot with a `systemd` service such as `/etc/systemd/system/octopus-app.service`.
