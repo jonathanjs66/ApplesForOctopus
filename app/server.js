@@ -9,13 +9,16 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 
 const PORT = process.env.APP_PORT || 3000;
-const MONGO_USERNAME = process.env.MONGO_USERNAME;
-const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
 const MONGO_HOST = process.env.MONGO_HOST || 'mongodb';
 const MONGO_PORT = process.env.MONGO_PORT || '27017';
 const MONGO_DB = process.env.MONGO_DB || 'fruitsdb';
 const APP_DB_USERNAME = process.env.APP_DB_USERNAME || 'fruits_app';
-const APP_DB_PASSWORD = process.env.APP_DB_PASSWORD || 'OctopusApp2026!';
+const APP_DB_PASSWORD = process.env.APP_DB_PASSWORD;
+
+if (!APP_DB_PASSWORD) {
+  console.error('APP_DB_PASSWORD environment variable is required');
+  process.exit(1);
+}
 const BACKUP_DIR = process.env.BACKUP_DIR || '/app/backups';
 
 const MONGO_URI = `mongodb://${APP_DB_USERNAME}:${APP_DB_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=${MONGO_DB}`;
@@ -535,8 +538,8 @@ app.post('/inventory/save', async (req, res) => {
 });
 
 app.post('/inventory/backup', async (req, res) => {
-  if (!MONGO_USERNAME || !MONGO_PASSWORD) {
-    console.error('MongoDB root credentials are required for backup operations.');
+  if (!APP_DB_USERNAME || !APP_DB_PASSWORD) {
+    console.error('MongoDB app credentials are required for backup operations.');
     return res.status(500).send('Backup is not configured correctly.');
   }
 
@@ -554,9 +557,9 @@ app.post('/inventory/backup', async (req, res) => {
     await execFileAsync('mongodump', [
       '--host', MONGO_HOST,
       '--port', MONGO_PORT,
-      '--username', MONGO_USERNAME,
-      '--password', MONGO_PASSWORD,
-      '--authenticationDatabase', 'admin',
+      '--username', APP_DB_USERNAME,
+      '--password', APP_DB_PASSWORD,
+      '--authenticationDatabase', MONGO_DB,
       '--db', MONGO_DB,
       `--archive=${backupPath}`,
       '--gzip'
@@ -574,8 +577,8 @@ app.post('/inventory/backup', async (req, res) => {
 });
 
 app.post('/inventory/restore', async (req, res) => {
-  if (!MONGO_USERNAME || !MONGO_PASSWORD) {
-    console.error('MongoDB root credentials are required for restore operations.');
+  if (!APP_DB_USERNAME || !APP_DB_PASSWORD) {
+    console.error('MongoDB app credentials are required for restore operations.');
     return res.status(500).send('Restore is not configured correctly.');
   }
 
@@ -598,9 +601,9 @@ app.post('/inventory/restore', async (req, res) => {
     await execFileAsync('mongorestore', [
       '--host', MONGO_HOST,
       '--port', MONGO_PORT,
-      '--username', MONGO_USERNAME,
-      '--password', MONGO_PASSWORD,
-      '--authenticationDatabase', 'admin',
+      '--username', APP_DB_USERNAME,
+      '--password', APP_DB_PASSWORD,
+      '--authenticationDatabase', MONGO_DB,
       '--db', MONGO_DB,
       `--archive=${backupPath}`,
       '--gzip',

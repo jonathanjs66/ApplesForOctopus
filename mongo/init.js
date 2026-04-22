@@ -1,6 +1,10 @@
 const dbName = process.env.MONGO_DB || 'fruitsdb';
 const appDbUsername = process.env.APP_DB_USERNAME || 'fruits_app';
-const appDbPassword = process.env.APP_DB_PASSWORD || 'OctopusApp2026!';
+const appDbPassword = process.env.APP_DB_PASSWORD;
+
+if (!appDbPassword) {
+  throw new Error('APP_DB_PASSWORD is required');
+}
 
 db = db.getSiblingDB(dbName);
 

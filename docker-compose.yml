@@ -19,8 +19,6 @@ services:
   app:
     build: ./app
     environment:
-      MONGO_USERNAME: ${MONGO_USERNAME}
-      MONGO_PASSWORD: ${MONGO_PASSWORD}
       MONGO_DB: ${MONGO_DB}
       APP_PORT: ${APP_PORT}
       APP_DB_USERNAME: ${APP_DB_USERNAME}

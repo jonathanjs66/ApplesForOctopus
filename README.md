@@ -15,6 +15,7 @@ i made a file that everytime the ec2 restart it will automatically go to the app
 /etc/systemd/system/octopus-app.service
 
 4) password lifeycle
+I separated the MongoDB users by responsibility. The admin user is kept for database initialization, deployment, and user management, and it is not passed into the application container. The application itself connects with the app database user, and backup/restore now also use that same app user instead of the admin credential. This keeps the design simpler while still reducing risk, because a compromise of the web app does not expose the MongoDB admin password.
 ## Architecture
 
 The application is composed of three containers:

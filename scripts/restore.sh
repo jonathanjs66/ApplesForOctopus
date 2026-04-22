@@ -18,13 +18,14 @@ source ./.env
 set +a
 
 cat "$BACKUP_FILE" | docker compose exec -T \
-  -e MONGO_USERNAME="$MONGO_USERNAME" \
-  -e MONGO_PASSWORD="$MONGO_PASSWORD" \
+  -e APP_DB_USERNAME="$APP_DB_USERNAME" \
+  -e APP_DB_PASSWORD="$APP_DB_PASSWORD" \
+  -e MONGO_DB="$MONGO_DB" \
   mongodb sh -c '
     mongorestore \
-      --username "$MONGO_USERNAME" \
-      --password "$MONGO_PASSWORD" \
-      --authenticationDatabase admin \
+      --username "$APP_DB_USERNAME" \
+      --password "$APP_DB_PASSWORD" \
+      --authenticationDatabase "$MONGO_DB" \
       --archive \
       --gzip \
       --drop
