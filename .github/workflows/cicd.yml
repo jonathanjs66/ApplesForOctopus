@@ -17,13 +17,13 @@ jobs:
       - name: Create .env file
         run: |
           cat > .env <<EOF
-          MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
-          MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
-          MONGO_DB=${{ secrets.MONGO_DB }}
-          APP_PORT=${{ secrets.APP_PORT }}
-          APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
-          APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
-          EOF
+MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+MONGO_DB=${{ secrets.MONGO_DB }}
+APP_PORT=${{ secrets.APP_PORT }}
+APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
+APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
+EOF
 
       - name: Build and start containers
         run: docker compose up --build -d
@@ -73,13 +73,13 @@ jobs:
             git reset --hard ${{ github.sha }}
 
             cat > .env <<EOF
-            MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
-            MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
-            MONGO_DB=${{ secrets.MONGO_DB }}
-            APP_PORT=${{ secrets.APP_PORT }}
-            APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
-            APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
-            EOF
+MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+MONGO_DB=${{ secrets.MONGO_DB }}
+APP_PORT=${{ secrets.APP_PORT }}
+APP_DB_USERNAME=${{ secrets.APP_DB_USERNAME }}
+APP_DB_PASSWORD=${{ secrets.APP_DB_PASSWORD }}
+EOF
 
             set -a
             . ./.env
@@ -90,9 +90,17 @@ jobs:
             docker-compose up --build -d mongodb
 
             for i in {1..15}; do
-              docker-compose exec -T mongodb mongosh -u "$MONGO_USERNAME" -p "$MONGO_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand('ping')" >/dev/null 2>&1 && break
+              if docker-compose exec -T mongodb mongosh -u "$MONGO_USERNAME" -p "$MONGO_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
+                echo "MongoDB is up!"
+                break
+              fi
               echo "Waiting for MongoDB..."
               sleep 5
+
+              if [ "$i" -eq 15 ]; then
+                echo "MongoDB never became ready" >&2
+                exit 1
+              fi
             done
 
             docker-compose exec -T \
@@ -105,13 +113,20 @@ jobs:
             docker-compose up --build -d app nginx
 
             for i in {1..15}; do
-              curl -sf http://localhost/health && break
+              if curl -sf http://localhost/health; then
+                echo "Deployed app is up!"
+                break
+              fi
               echo "Waiting for deployed app..."
               sleep 5
+
+              if [ "$i" -eq 15 ]; then
+                echo "Deployed app never became healthy" >&2
+                exit 1
+              fi
             done
             page="$(curl -fsS http://localhost/)"
             echo "$page" | grep -q "apples"
             echo "$page" | grep -q 'id="qty-1"'
             echo "$page" | grep -q 'value="5"'
             docker-compose ps
-
