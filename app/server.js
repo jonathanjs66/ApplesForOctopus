@@ -406,6 +406,7 @@ function renderInventoryPage(fruits, backups, notice) {
         </style>
       </head>
       <body>
+        <div style="position:fixed;top:12px;right:16px;background:#1a1a2e;color:#fff;font-size:12px;font-family:monospace;padding:4px 10px;border-radius:4px;opacity:0.85;">${APP_INSTANCE_NAME}</div>
         <main class="shell">
           <section class="card">
             <p class="eyebrow">Octopus inventory</p>
