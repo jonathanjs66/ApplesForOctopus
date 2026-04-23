@@ -10,7 +10,7 @@ The original requirement was a small web application that reads fruit inventory 
 The app now displays all fruit records, not only apples, and lets the user update quantities through the web UI.
 
 2. Backup and restore
-The project includes both UI-based and script-based MongoDB backup and restore flows. Backups are written to the host `backups/` directory so they remain available outside the containers,
+The project includes both UI-based and script-based MongoDB backup and restore flows. Backups are written to the host `backups/` directory so they remain available outside the containers.
 
 3. EC2 startup and deployment
 The application is deployed to EC2 through GitHub Actions over SSH. On the server side, the stack can be started automatically on reboot with a `systemd` service such as `/etc/systemd/system/octopus-app.service`.
@@ -20,15 +20,16 @@ MongoDB responsibilities are separated by purpose. The Mongo admin user is used 
 
 ## Architecture
 
-The application is composed of three containers:
+The application is composed of four containers:
 
-- `nginx`: public entrypoint on port `80`
-- `app`: Node.js / Express web application
+- `nginx`: public entrypoint on port `80`, acts as a load balancer
+- `app1`: Node.js / Express web application (instance 1)
+- `app2`: Node.js / Express web application (instance 2)
 - `mongodb`: MongoDB database
 
 Request flow:
 
-`Browser -> Nginx -> Node.js App -> MongoDB`
+`Browser -> Nginx -> app1 or app2 (round-robin) -> MongoDB`
 
 ## Persistence Model
 
@@ -128,7 +129,9 @@ This keeps the runtime application less privileged than the deployment flow.
 
 ```mermaid
 flowchart LR
-    Browser --> Nginx[nginx container]
-    Nginx --> App[node.js app container]
-    App --> Mongo[(mongodb container)]
+    Browser --> Nginx[nginx container\nload balancer]
+    Nginx --> App1[node.js app1]
+    Nginx --> App2[node.js app2]
+    App1 --> Mongo[(mongodb container)]
+    App2 --> Mongo
 ```
