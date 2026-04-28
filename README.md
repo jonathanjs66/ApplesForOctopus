@@ -1,4 +1,4 @@
-# Octopus Fruits App
+# Fruits App
 
 Containerized inventory application for the Octopus exercise. The stack uses Node.js, MongoDB, and Nginx, with each component running in its own container.
 
