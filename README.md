@@ -16,7 +16,7 @@ The project includes both UI-based and script-based MongoDB backup and restore f
 The application is deployed to EC2 through GitHub Actions over SSH. On the server side, the stack can be started automatically on reboot with a `systemd` service such as `/etc/systemd/system/octopus-app.service`.
 
 4. Basic password lifecycle separation
-MongoDB responsibilities are separated by purpose. The Mongo admin user is used for database initialization, deployment, and user management, while the application itself connects with the application database user. Backup and restore use the same application user, which keeps the design simple while still ensuring that the Mongo admin credential is not exposed inside the app container.
+MongoDB responsibilities are separated by purpose. The Mongo admin user is used for database initialization, deployment, and user management, while the application itself connects with the application database user. Backup and restore use the same application user, which keeps the design simple while still ensuring that the Mongo admin credential is not exposed inside the app container..
 
 ## Architecture
 
